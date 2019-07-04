@@ -1,0 +1,13 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
+
+<h1>{{question.question_text}}</h1>
+<ul>
+    {%if question.comment_set.all%}
+        {% for comment in question.comment_set.all %}
+            <li class="{% if comment.positive == True %}positive{% else %}negative{% endif %}">{{comment.comment_text}}</li>
+        {% endfor %}
+    {%else%}
+        <h3>No comments yet</h3>
+    {%endif%}
+</ul>
