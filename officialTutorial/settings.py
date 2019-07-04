@@ -111,7 +111,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'GMT+10'
+#get from wiki list of timezones
+TIME_ZONE = 'Asia/Vladivostok'
 
 USE_I18N = True
 
