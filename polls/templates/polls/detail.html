@@ -1,15 +1,30 @@
 <h1>{{question.question_text}}</h1>
 {% if error_message %} <p><strong>{{error_message}}</strong></p> {% endif %}
+<!-- if list of options is empty -->
+{% if question.choice_set.all%}
+    <form action="{% url 'polls:vote' question.id %}" method="POST">
+        {% csrf_token %}
+        {% for choice in question.choice_set.all %}
+                <input type="radio" name="choice" id="choice{{forloop.counter}}" value="{{choice.id}}">
+                <label for="choice{{forloop.counter}}">{{choice.choice_text}}</label><br>
+        {% endfor %}
+        <input type="submit" value="vote">
+    </form>
+    <br> 
+{%else%} 
+    <p>Sorry, poll has no options yet</p> 
+{% endif %}
 
-<form action="{% url 'polls:vote' question.id %}" method="POST">
+<!-- submit comment -->
+<form action="{% url 'polls:leave_comment' question.id%}" method="post">
     {% csrf_token %}
-    {% for choice in question.choice_set.all %}
-            <input type="radio" name="choice" id="choice{{forloop.counter}}" value="{{choice.id}}">
-            <label for="choice{{forloop.counter}}">{{choice.choice_text}}</label><br>
-    {% endfor %}
-    <input type="submit" value="vote">
+    <input type="radio" name="is_positive" id="is_positive_positive" value=True>
+    <label for="is_positive_positive">Like it</label><br>
+    <input type="radio" name="is_positive" id="is_positive_negative" value=False>
+    <label for="is_positive_negative">Hate it</label><br>
+    <input type="input" name="comment_text">
+    <input type="submit" value="Leave comment">
 </form>
-<br>
 
-Watch comments <a href="{% url 'polls:comments' question.id %}">here</a></br>
-Watch results <a href="{% url 'polls:results' question.id %}">here</a>
+<a href="{% url 'polls:comments' question.id %}">Watch comments</a></br>
+<a href="{% url 'polls:results' question.id %}">Watch results</a>

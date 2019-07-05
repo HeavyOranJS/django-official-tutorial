@@ -16,6 +16,7 @@ urlpatterns = [
     path('<int:pk>/', views.DetailView.as_view(), name='detail'),
     path('<int:pk>/results/', views.ResultsView.as_view(), name='results'),
     path('<int:pk>/comments/', views.CommentsView.as_view(), name='comments'),
-    #non-generic view
-    path('<int:question_id>/vote/', views.vote, name='vote')
+    #non-generic views
+    path('<int:question_id>/vote/', views.vote, name='vote'),
+    path('<int:question_id>/leave_comment/', views.leave_comment, name='leave_comment'),
 ]

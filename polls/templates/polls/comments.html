@@ -2,6 +2,8 @@
 <link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
 
 <h1>{{question.question_text}}</h1>
+{% if error_message %} <p><strong>{{error_message}}</strong></p> {% endif %}
+
 <ul>
     {%if question.comment_set.all%}
         {% for comment in question.comment_set.all %}
@@ -11,3 +13,6 @@
         <h3>No comments yet</h3>
     {%endif%}
 </ul>
+
+<a href="{% url 'polls:detail' question.id %}">Return to question</a></br>
+<a href="{% url 'polls:index'%}">Return to top questions</a></br>

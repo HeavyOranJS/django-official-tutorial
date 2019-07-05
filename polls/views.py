@@ -24,13 +24,25 @@ class DetailView(generic.DetailView):
     #default name: polls/question_detail.html
     template_name = 'polls/detail.html'
 
+class ResultsView(generic.DetailView):
+    model = Question
+    template_name = 'polls/results.html'
+
 class CommentsView(generic.DetailView):
     model = Question
     template_name = 'polls/comments.html'
 
-class ResultsView(generic.DetailView):
-    model = Question
-    template_name = 'polls/results.html'
+def leave_comment(request, question_id):
+    question = get_object_or_404(Question, pk=question_id)
+    #get comment_text and is comment positive from post request
+    #with kwarg(keyword arg) comment_text
+    comment = Comment(
+            question=question, 
+            comment_text=request.POST['comment_text'], 
+            positive=request.POST['is_positive'] 
+        )
+    comment.save()
+    return HttpResponseRedirect(reverse('polls:comments', args=(question_id,)))
 
 def vote(request, question_id):
     #get question or 404 
@@ -57,4 +69,3 @@ def vote(request, question_id):
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
         #TODO why do i need reverse and cant write like this
         # return HttpResponse('polls:results', args=(question.id,))
-    # return HttpResponse("You're voiting on question %s" % question_id)
