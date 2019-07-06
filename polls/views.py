@@ -19,15 +19,28 @@ class IndexView(generic.ListView):
         now = timezone.now()
         return Question.objects.filter(pub_date__lte=now).order_by('-pub_date')[:5]
 
+# class DetailView(generic.DetailView):
+#     #model name, duh
+#     model = Question
+#     #override default template name <app name>/<model name>_detail.html
+#     #default name: polls/question_detail.html
+#     template_name = 'polls/detail.html'
+#     def qet_queryset(self):
+#         """
+#         Excludes not published questions. 
+#         """
+#         now = timezone.now()
+#         return Question.objects.filter(pub_date__lte=now)
+
 class DetailView(generic.DetailView):
     #model name, duh
     model = Question
     #override default template name <app name>/<model name>_detail.html
     #default name: polls/question_detail.html
     template_name = 'polls/detail.html'
-    def qet_queryset(self):
+    def get_queryset(self):
         """
-        Excludes not published questions. 
+        Excludes any questions that aren't published yet.
         """
         return Question.objects.filter(pub_date__lte=timezone.now())
 
