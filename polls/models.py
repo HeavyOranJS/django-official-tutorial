@@ -10,13 +10,13 @@ class Question(models.Model):
     pub_date = models.DateTimeField('date published')
 
     def __str__(self):
-        return "'{}' {}".format(
-            self.question_text,
-            self.pub_date.strftime("%B %d %Y"))
+        return "{}".format(
+            self.question_text)
 
     def was_published_recently(self):
         """Determins if question was published less than day ago"""
-        return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
+        now = timezone.now()
+        return now - datetime.timedelta(days=1) <= self.pub_date <= now
 
 class Comment(models.Model):
     """Comments to question. Contains link to question, comment text and bool positive"""

@@ -79,6 +79,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'testdb',
         'USER': 'testuser',
+        #NOTE TESTS DOESNT WORK IF USER DOESNT HAVE PERMISSION TO CREATE DB
         #NOTE DOESNT WORK ON USERS WHO HAVE NO PASSWORD
         'PASSWORD': 'testPassword',
         'HOST': 'localhost',

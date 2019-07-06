@@ -2,6 +2,7 @@ from django.shortcuts import get_object_or_404, render
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.urls import reverse
 from django.views import generic
+from django.utils import timezone
 
 from .models import Question, Choice, Comment
 
@@ -15,7 +16,8 @@ class IndexView(generic.ListView):
 
     def get_queryset(self):
         """Return the las five published questions."""
-        return Question.objects.order_by('-pub_date')[:5]
+        now = timezone.now()
+        return Question.objects.filter(pub_date__lte=now).order_by('-pub_date')[:5]
 
 class DetailView(generic.DetailView):
     #model name, duh
@@ -23,6 +25,11 @@ class DetailView(generic.DetailView):
     #override default template name <app name>/<model name>_detail.html
     #default name: polls/question_detail.html
     template_name = 'polls/detail.html'
+    def qet_queryset(self):
+        """
+        Excludes not published questions. 
+        """
+        return Question.objects.filter(pub_date__lte=timezone.now())
 
 class ResultsView(generic.DetailView):
     model = Question
@@ -37,9 +44,9 @@ def leave_comment(request, question_id):
     #get comment_text and is comment positive from post request
     #with kwarg(keyword arg) comment_text
     comment = Comment(
-            question=question, 
-            comment_text=request.POST['comment_text'], 
-            positive=request.POST['is_positive'] 
+            question=question,
+            comment_text=request.POST['comment_text'],
+            positive=request.POST['is_positive']
         )
     comment.save()
     return HttpResponseRedirect(reverse('polls:comments', args=(question_id,)))
