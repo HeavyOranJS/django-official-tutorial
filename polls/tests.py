@@ -72,7 +72,10 @@ class QuestionIndexViewTests(TestCase):
         """
         create_question(question_text="Past question", days=-30)
         response = self.client.get(reverse('polls:index'))
-        self.assertQuerysetEqual(response.context['latest_question_list'], ['<Question: Past question>'])
+        self.assertQuerysetEqual(
+            response.context['latest_question_list'],
+            ['<Question: Past question>']
+        )
 
     def test_two_past_question(self):
         """
@@ -81,7 +84,7 @@ class QuestionIndexViewTests(TestCase):
         create_question(question_text="Past question 1", days=-30)
         create_question(question_text="Past question 2", days=-15)
         response = self.client.get(reverse('polls:index'))
-        wanted_result =  ['<Question: Past question 2>', '<Question: Past question 1>']
+        wanted_result = ['<Question: Past question 2>', '<Question: Past question 1>']
         self.assertQuerysetEqual(response.context['latest_question_list'], wanted_result)
 
     def test_future_question(self):
@@ -100,7 +103,10 @@ class QuestionIndexViewTests(TestCase):
         create_question(question_text="Future question", days=30)
         create_question(question_text="Past question", days=-30)
         response = self.client.get(reverse('polls:index'))
-        self.assertQuerysetEqual(response.context['latest_question_list'], ['<Question: Past question>'])
+        self.assertQuerysetEqual(
+            response.context['latest_question_list'],
+            ['<Question: Past question>']
+        )
 
 class QuestionDetailViewTests(TestCase):
     def test_future_question(self):
@@ -119,3 +125,39 @@ class QuestionDetailViewTests(TestCase):
         past_question = create_question(question_text="Past question", days=-5)
         response = self.client.get(reverse("polls:detail", args=(past_question.id,)))
         self.assertEqual(response.status_code, 200)
+
+class QuestionChoiceViewTests(TestCase):
+    def test_result_page_displays_questions_with_choices(self):
+        """
+        Result page is shown for pages with any choice options
+        """
+        question_with_choices = create_question(question_text="Question with responce", days=1)
+        question_with_choices.choice_set.create(choice_text='Voted choice', votes=1)
+        response = self.client.get(reverse("polls:results", args=(question_with_choices.id,)))
+        self.assertEqual(response.status_code, 200)
+
+    def test_result_page_doesnt_display_questions_without_choices(self):
+        """
+        Result page isn't shown for pages without any choice options
+        """
+        question_with_choices = create_question(question_text="Question without responce", days=1)
+        response = self.client.get(reverse("polls:results", args=(question_with_choices.id,)))
+        self.assertEqual(response.status_code, 404)
+
+class QuestionCommentsViewTests(TestCase):
+    def test_result_page_displays_questions_with_comments(self):
+        """
+        Result page is shown for pages with any comments
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.choice_set.create(choice_text='Voted choice', votes=1)
+        response = self.client.get(reverse("polls:results", args=(question_with_comments.id,)))
+        self.assertEqual(response.status_code, 200)
+
+    def test_result_page_doesnt_display_questions_without_comments(self):
+        """
+        Result page isn't shown for pages without any comments
+        """
+        question_with_comments = create_question(question_text="Question without responce", days=1)
+        response = self.client.get(reverse("polls:results", args=(question_with_comments.id,)))
+        self.assertEqual(response.status_code, 404)
