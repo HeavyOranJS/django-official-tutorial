@@ -26,5 +26,9 @@
     <input type="submit" value="Leave comment">
 </form>
 
-<a href="{% url 'polls:comments' question.id %}">Watch comments</a></br>
-<a href="{% url 'polls:results' question.id %}">Watch results</a>
+{% if question.choice_set.all|length > 0 %}
+    <a href="{% url 'polls:results' question.id %}">Watch results</a><br>
+{% endif %}
+{% if question.comment_set.all|length > 0 %}
+    <a href="{% url 'polls:comments' question.id %}">Watch comments</a>
+{% endif %}
