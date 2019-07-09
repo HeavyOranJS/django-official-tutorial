@@ -1,7 +1,15 @@
-.negative{
+.negativeComment{
     color: red;
 }
 
-.positive{
+.positiveComment{
     color: green;
+}
+
+li a {
+    color: green;
+}
+
+body {
+    background: white url("images/background-section-2-test.svg") no-repeat;
 }

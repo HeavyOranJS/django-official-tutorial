@@ -1,3 +1,6 @@
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'polls/style.css' %}">
+
 <h1>TOP 5 RECENT QUESTIONS</h1>
 {% if latest_question_list %}
     <ul>

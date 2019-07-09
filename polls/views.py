@@ -89,5 +89,3 @@ def vote(request, question_id):
         # with POST data. This prevents data from being posted twice if a
         # user hits the Back button." by docs.djangoproject.com
         return HttpResponseRedirect(reverse('polls:results', args=(question.id,)))
-        #TODO why do i need reverse and cant write like this
-        # return HttpResponse('polls:results', args=(question.id,))
