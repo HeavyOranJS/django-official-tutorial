@@ -16,6 +16,14 @@ from .models import Question
 
 #NOTE: for tests to work USER from DATABASES settings.py must have
 #permission to create databases
+def create_question(question_text, days):
+    """
+    Create a question with given text, and offset in 'days' days
+    Negative 'days' to get past dates
+    """
+    time = timezone.now() + datetime.timedelta(days=days)
+    return Question.objects.create(question_text=question_text, pub_date=time)
+
 class QuestionModelTests(TestCase):
     """Tests for question model"""
     def test_was_published_recently_with_future_question(self):
@@ -45,13 +53,204 @@ class QuestionModelTests(TestCase):
         recent_question = Question(pub_date=time)
         self.assertIs(recent_question.was_published_recently(), True)
 
-def create_question(question_text, days):
-    """
-    Create a question with given text, and offset in 'days' days
-    Negative 'days' to get past dates
-    """
-    time = timezone.now() + datetime.timedelta(days=days)
-    return Question.objects.create(question_text=question_text, pub_date=time)
+    #count_comment tests
+    def test_count_comments_no_comments(self):
+        """
+        сount_comments() returns 0 if question has no comments
+        """
+        question_without_comments = create_question(question_text="Question with responce", days=1)
+        comment_amount = question_without_comments.count_comments()
+        self.assertEqual(comment_amount, 0)
+
+    def test_count_comments_1_comment(self):
+        """
+        сount_comments() returns 1 if question has 1 comment
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Voted comment', positive=True)
+        comment_amount = question_with_comments.count_comments()
+        self.assertEqual(comment_amount, 1)
+
+    def test_count_comments_multiple_comments(self):
+        """
+        сount_comments() returns 21 if question has 2 comments
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Voted comment', positive=True)
+        question_with_comments.comment_set.create(comment_text='Other comment', positive=True)
+        comment_amount = question_with_comments.count_comments()
+        self.assertEqual(comment_amount, 2)
+
+    #count_coments_positive tests
+    def test_count_comments_positive_positive_no_comments(self):
+        """
+        сount_comments() returns 0 if question has no comments
+        """
+        question_without_comments = create_question(question_text="Question with responce", days=1)
+        positive_comment_amount = question_without_comments.count_comments_positive()
+        self.assertEqual(positive_comment_amount, 0)
+
+    def test_count_comments_positive_positive_comment(self):
+        """
+        сount_comments() returns 1 if question has 1 positive comment
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Voted comment', positive=True)
+        positive_comment_amount = question_with_comments.count_comments_positive()
+        self.assertEqual(positive_comment_amount, 1)
+
+    def test_count_comments_positive_multiple_positive_comments(self):
+        """
+        сount_comments() returns 2 if question has 2 positive comments
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Voted comment', positive=True)
+        question_with_comments.comment_set.create(comment_text='Other comment', positive=True)
+        positive_comment_amount = question_with_comments.count_comments_positive()
+        self.assertEqual(positive_comment_amount, 2)
+
+    def test_count_comments_positive_multiple_positive_comments_and_negative_comment(self):
+        """
+        сount_comments() returns 2 if question has 2 positive comments and doesnt get triggered
+        by negative one
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Voted comment', positive=True)
+        question_with_comments.comment_set.create(comment_text='Other comment', positive=True)
+        question_with_comments.comment_set.create(comment_text='Negative comment', positive=False)
+        positive_comment_amount = question_with_comments.count_comments_positive()
+        self.assertEqual(positive_comment_amount, 2)
+
+    def test_count_comments_positive_negative_comment(self):
+        """
+        сount_comments() doesnt get triggered by negative comment
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Voted comment', positive=False)
+        positive_comment_amount = question_with_comments.count_comments_positive()
+        self.assertEqual(positive_comment_amount, 0)
+
+    def test_count_comments_positive_multiple_negative_comments(self):
+        """
+        сount_comments() doesnt get triggered by multiple negative comments
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Voted comment', positive=False)
+        question_with_comments.comment_set.create(comment_text='Other comment', positive=False)
+        positive_comment_amount = question_with_comments.count_comments_positive()
+        self.assertEqual(positive_comment_amount, 0)
+    
+    def test_count_comments_positive_multiple_negative_comments_and_positive_comment(self):
+        """
+        сount_comments() returns 1 if question has a positive comment and doesnt get triggered
+        by negative ones
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Negative comment', positive=False)
+        question_with_comments.comment_set.create(comment_text='Other negative comment', positive=False)
+        question_with_comments.comment_set.create(comment_text='Postive comment', positive=True)
+        positive_comment_amount = question_with_comments.count_comments_positive()
+        self.assertEqual(positive_comment_amount, 1)
+    
+    def test_count_comments_positive_multiple_negative_and_positive_comments(self):
+        """
+        сount_comments() returns 2 if question has 2 positive comments and doesnt get triggered
+        by negative ones
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='Negative comment', positive=False)
+        question_with_comments.comment_set.create(comment_text='Other negative comment', positive=False)
+        question_with_comments.comment_set.create(comment_text='Postive comment', positive=True)
+        question_with_comments.comment_set.create(comment_text='Other postive comment', positive=True)
+        positive_comment_amount = question_with_comments.count_comments_positive()
+        self.assertEqual(positive_comment_amount, 2)
+
+    #count_coments_negative tests
+    def test_count_comments_negative_negative_no_comments(self):
+        """
+        сount_comments() returns 0 if question has no comments
+        """
+        question_without_comments = create_question(question_text="", days=1)
+        positive_comment_amount = question_without_comments.count_comments_negative()
+        self.assertEqual(positive_comment_amount, 0)
+
+    def test_count_comments_negative_negative_comment(self):
+        """
+        сount_comments() returns 1 if question has 1 negative comment
+        """
+        question_with_comments = create_question(question_text="", days=1)
+        question_with_comments.comment_set.create(comment_text='', positive=False)
+        positive_comment_amount = question_with_comments.count_comments_negative()
+        self.assertEqual(positive_comment_amount, 1)
+
+    def test_count_comments_negative_multiple_negative_comments(self):
+        """
+        сount_comments() returns 2 if question has 2 negative comments
+        """
+        question_with_comments = create_question(question_text="", days=1)
+        question_with_comments.comment_set.create(comment_text='', positive=False)
+        question_with_comments.comment_set.create(comment_text='', positive=False)
+        positive_comment_amount = question_with_comments.count_comments_negative()
+        self.assertEqual(positive_comment_amount, 2)
+
+    def test_count_comments_negative_multiple_negative_comments_and_positive_comment(self):
+        """
+        сount_comments() returns 2 if question has 2 negative comments and doesnt get triggered
+        by positive one
+        """
+        question_with_comments = create_question(question_text="", days=1)
+        question_with_comments.comment_set.create(comment_text='', positive=False)
+        question_with_comments.comment_set.create(comment_text='', positive=False)
+        question_with_comments.comment_set.create(comment_text='', positive=True)
+        positive_comment_amount = question_with_comments.count_comments_negative()
+        self.assertEqual(positive_comment_amount, 2)
+
+    def test_count_comments_negative_positive_comment(self):
+        """
+        сount_comments() doesnt get triggered by positive comment
+        """
+        question_with_comments = create_question(question_text="", days=1)
+        question_with_comments.comment_set.create(comment_text='', positive=True)
+        positive_comment_amount = question_with_comments.count_comments_negative()
+        self.assertEqual(positive_comment_amount, 0)
+
+    def test_count_comments_negative_multiple_positive_comments(self):
+        """
+        сount_comments() doesnt get triggered by multiple positive comments
+        """
+        question_with_comments = create_question(question_text="", days=1)
+        question_with_comments.comment_set.create(comment_text='', positive=True)
+        question_with_comments.comment_set.create(comment_text='', positive=True)
+        positive_comment_amount = question_with_comments.count_comments_negative()
+        self.assertEqual(positive_comment_amount, 0)
+    
+    def test_count_comments_negative_multiple_positive_comments_and_negative_comment(self):
+        """
+        сount_comments() returns 1 if question has a positive comment and doesnt get triggered
+        by negative ones
+        """
+        question_with_comments = create_question(question_text="", days=1)
+        question_with_comments.comment_set.create(comment_text='', positive=True)
+        question_with_comments.comment_set.create(comment_text='', positive=True)
+        question_with_comments.comment_set.create(comment_text='', positive=False)
+        positive_comment_amount = question_with_comments.count_comments_negative()
+        self.assertEqual(positive_comment_amount, 1)
+    
+    def test_count_comments_negative_multiple_positive_and_negative_comments(self):
+        """
+        сount_comments() returns 2 if question has 2 positive comments and doesnt get triggered
+        by negative ones
+        """
+        question_with_comments = create_question(question_text="Question with responce", days=1)
+        question_with_comments.comment_set.create(comment_text='', positive=True)
+        question_with_comments.comment_set.create(comment_text='', positive=True)
+        question_with_comments.comment_set.create(comment_text='', positive=False)
+        question_with_comments.comment_set.create(comment_text='', positive=False)
+        positive_comment_amount = question_with_comments.count_comments_negative()
+        self.assertEqual(positive_comment_amount, 2)
+
+
+        #TODO test negative comments: no comments, positive and negative, one of a kind, two of a kind
 
 class QuestionIndexViewTests(TestCase):
     """Tests for question index view"""
