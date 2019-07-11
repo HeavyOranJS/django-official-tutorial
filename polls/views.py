@@ -3,7 +3,7 @@ from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.views import generic
 from django.utils import timezone
-from django.db.models import Count
+from django.db.models import Count, F
 
 from .models import Question, Choice, Comment
 
@@ -83,7 +83,10 @@ def vote(request, question_id):
         })
     else:
         #if everything is fine add vote and save choice
-        selected_choice.votes += 1
+
+        #NOTE: F objects fall silently if attribute is wrong
+        #example: selected_choice.vote_ = F('votes') + 1
+        selected_choice.votes = F('votes') + 1
         selected_choice.save()
         # "Always return an HttpResponseRedirect after successfully dealing
         # with POST data. This prevents data from being posted twice if a
