@@ -17,22 +17,19 @@ class Question(models.Model):
         """
         Returns amount of comments
         """
-        this_question = Question.objects.get(pk=self.pk)
-        return this_question.comment_set.all().count()
+        return Question.objects.get(pk=self.pk).comment_set.all().count()
 
     def count_comments_positive(self):
         """
         Returns amount of positive comments
         """
-        this_question = Question.objects.get(pk=self.pk)
-        return this_question.comment_set.filter(positive=True).count()
+        return Question.objects.get(pk=self.pk).comment_set.filter(positive=True).count()
 
     def count_comments_negative(self):
         """
         Returns amount of negative comments
         """
-        this_question = Question.objects.get(pk=self.pk)
-        return this_question.comment_set.filter(positive=False).count()
+        return Question.objects.get(pk=self.pk).comment_set.filter(positive=False).count()
 
     def was_published_recently(self):
         """Determins if question was published less than day ago"""
